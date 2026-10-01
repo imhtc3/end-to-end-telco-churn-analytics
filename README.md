@@ -112,6 +112,28 @@ format and adds window-function features such as price relative to peers.
 - The winner is picked on **validation** AUC; all reported numbers are on the untouched **test** split.
 - Model-agnostic permutation importance so the neural net and the tree models are explained the same way.
 
+  
+### Results
+
+Test set (1,409 customers, never seen during training or model selection):
+
+| Model | CV AUC (5-fold) | Valid AUC | Test ROC-AUC | Test PR-AUC | Brier | Top-decile lift |
+|---|---|---|---|---|---|---|
+| Logistic regression | 0.855 ± 0.007 | 0.819 | **0.846** | **0.672** | **0.136** | **2.88×** |
+| Hist gradient boosting | 0.845 ± 0.009 | 0.818 | 0.845 | 0.657 | 0.137 | 2.83× |
+| Random forest | 0.849 ± 0.009 | 0.816 | 0.844 | 0.663 | 0.136 | **2.88×** |
+| PyTorch tabular net | – | **0.825** | 0.843 | 0.664 | 0.138 | 2.80× |
+
+- All four models land within 0.004 AUC of each other on the test set. The signal in this dataset is mostly
+  contract, tenure, internet type and payment method, which a regularised logistic regression captures well.
+- The PyTorch net won on validation and was selected by the pipeline, but it doesn't beat logistic regression
+  on held-out data. In production I'd ship the logistic regression: same accuracy, easier to explain,
+  better calibrated.
+- Top-decile lift of 2.9× means the 10% of customers the model ranks riskiest churn at roughly 76%,
+  against a 26.5% base rate.
+
+**Campaign value (test set):** contacting customers above the value-maximising threshold of 0.34 returns
+an expected **+$25.7k**, while contacting everyone would **lose $3.7k** under the same offer assumptions.
 Full comparison: [`reports/model_comparison.md`](reports/model_comparison.md) · run summary: [`reports/metrics.json`](reports/metrics.json)
 
 ![ROC and PR](reports/figures/08_roc_pr.png)
