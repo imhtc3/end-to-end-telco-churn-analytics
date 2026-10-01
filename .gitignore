@@ -1,0 +1,24 @@
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+
+# data - raw extract is re-downloaded by the pipeline, warehouse is rebuilt
+data/raw/*.csv
+data/raw/*.part
+data/warehouse/*.db
+data/processed/*
+
+# large model binaries
+models/*.joblib
+
+# power bi temp files
+powerbi/*.pbix.bak
+~$*.xlsx
+
+.DS_Store
+.vscode/
+.idea/
