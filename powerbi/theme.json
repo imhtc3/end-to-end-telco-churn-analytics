@@ -1,0 +1,44 @@
+{
+  "name": "Telco Churn",
+  "dataColors": [
+    "#2A78D6",
+    "#EB6834",
+    "#1BAF7A",
+    "#EDA100",
+    "#E87BA4",
+    "#008300",
+    "#4A3AA7",
+    "#E34948"
+  ],
+  "background": "#FCFCFB",
+  "foreground": "#0B0B0B",
+  "tableAccent": "#2A78D6",
+  "good": "#1BAF7A",
+  "neutral": "#EDA100",
+  "bad": "#E34948",
+  "maximum": "#EB6834",
+  "center": "#F1F0ED",
+  "minimum": "#2A78D6",
+  "textClasses": {
+    "title": { "fontFace": "Segoe UI Semibold", "fontSize": 13, "color": "#0B0B0B" },
+    "header": { "fontFace": "Segoe UI Semibold", "fontSize": 11, "color": "#0B0B0B" },
+    "label": { "fontFace": "Segoe UI", "fontSize": 9, "color": "#52514E" },
+    "callout": { "fontFace": "Segoe UI Semibold", "fontSize": 26, "color": "#0B0B0B" }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#FFFFFF" } }, "transparency": 0 }],
+        "border": [{ "show": true, "color": { "solid": { "color": "#E4E3DF" } }, "radius": 6 }],
+        "title": [{ "fontColor": { "solid": { "color": "#0B0B0B" } }, "alignment": "left" }],
+        "valueAxis": [{ "gridlineColor": { "solid": { "color": "#E4E3DF" } }, "gridlineThickness": 1 }],
+        "categoryAxis": [{ "labelColor": { "solid": { "color": "#52514E" } } }]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [{ "color": { "solid": { "color": "#F4F4F1" } }, "transparency": 0 }]
+      }
+    }
+  }
+}

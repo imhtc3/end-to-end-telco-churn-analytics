@@ -1,0 +1,188 @@
+// =====================================================================
+//  Telco churn - DAX measures
+//  Home table: _Measures (empty calc table: _Measures = {BLANK()})
+// =====================================================================
+
+// ---------- base ----------
+Customers =
+    COUNTROWS ( fact_subscription )
+
+Churned Customers =
+    CALCULATE ( [Customers], fact_subscription[churn] = 1 )
+
+Active Customers =
+    [Customers] - [Churned Customers]
+
+Churn Rate =
+    DIVIDE ( [Churned Customers], [Customers] )
+
+Retention Rate =
+    1 - [Churn Rate]
+
+// ---------- revenue ----------
+MRR =
+    SUM ( fact_subscription[monthly_charges] )
+
+MRR Lost =
+    CALCULATE ( [MRR], fact_subscription[churn] = 1 )
+
+MRR Lost % =
+    DIVIDE ( [MRR Lost], [MRR] )
+
+Annualised Revenue Lost =
+    [MRR Lost] * 12
+
+ARPU =
+    DIVIDE ( [MRR], [Customers] )
+
+ARPU Churned =
+    CALCULATE ( [ARPU], fact_subscription[churn] = 1 )
+
+ARPU Retained =
+    CALCULATE ( [ARPU], fact_subscription[churn] = 0 )
+
+Lifetime Revenue =
+    SUM ( fact_subscription[total_charges] )
+
+Avg Tenure (m) =
+    AVERAGE ( fact_subscription[tenure] )
+
+// ---------- comparisons ----------
+Churn Rate vs Overall (pts) =
+    VAR _overall =
+        CALCULATE ( [Churn Rate], ALL ( dim_contract ), ALL ( dim_payment ),
+                    ALL ( dim_internet ), ALL ( dim_customer ), ALL ( dim_tenure_band ),
+                    ALL ( dim_segment ) )
+    RETURN
+        ( [Churn Rate] - _overall ) * 100
+
+Churn Rate Rank (Contract x Internet) =
+    RANKX (
+        ALLSELECTED ( dim_contract[contract_type], dim_internet[internet_service] ),
+        [Churn Rate], , DESC, DENSE
+    )
+
+Share of MRR Lost =
+    DIVIDE ( [MRR Lost], CALCULATE ( [MRR Lost], ALLSELECTED () ) )
+
+// cumulative share of lost MRR, ordered by tenure band - used for the Pareto visual
+Cumulative MRR Lost % =
+    VAR _band = MAX ( dim_tenure_band[band_order] )
+    RETURN
+        DIVIDE (
+            CALCULATE ( [MRR Lost], dim_tenure_band[band_order] <= _band, ALL ( dim_tenure_band ) ),
+            CALCULATE ( [MRR Lost], ALL ( dim_tenure_band ) )
+        )
+
+// ---------- add-ons ----------
+Addon Adoption % =
+    DIVIDE (
+        CALCULATE ( COUNTROWS ( bridge_customer_service ), bridge_customer_service[status] = "Yes" ),
+        CALCULATE ( COUNTROWS ( bridge_customer_service ),
+                    bridge_customer_service[status] <> "No internet service" )
+    )
+
+Churn Rate With Addon =
+    CALCULATE (
+        [Churn Rate],
+        FILTER ( fact_subscription,
+            CALCULATE ( COUNTROWS ( bridge_customer_service ), bridge_customer_service[status] = "Yes" ) > 0 )
+    )
+
+Churn Rate Without Addon =
+    CALCULATE (
+        [Churn Rate],
+        FILTER ( fact_subscription,
+            CALCULATE ( COUNTROWS ( bridge_customer_service ), bridge_customer_service[status] = "No" ) > 0 )
+    )
+
+// ---------- model scores ----------
+Avg Churn Probability =
+    AVERAGE ( fact_churn_score[churn_probability] )
+
+Expected Churners =
+    SUM ( fact_churn_score[churn_probability] )
+
+Expected MRR at Risk =
+    SUMX (
+        fact_churn_score,
+        fact_churn_score[churn_probability]
+            * RELATED ( fact_subscription[monthly_charges] )
+    )
+
+High Risk Customers =
+    CALCULATE (
+        COUNTROWS ( fact_churn_score ),
+        fact_churn_score[risk_tier] IN { "High", "Critical" }
+    )
+
+High Risk Active Customers =
+    CALCULATE (
+        [High Risk Customers],
+        fact_subscription[churn] = 0
+    )
+
+Targeted Customers =
+    CALCULATE ( COUNTROWS ( fact_churn_score ), fact_churn_score[targeted] = 1 )
+
+// precision / recall of the campaign list, only meaningful on the held-out test split
+Campaign Precision (test) =
+    CALCULATE (
+        DIVIDE (
+            CALCULATE ( COUNTROWS ( fact_churn_score ), fact_churn_score[targeted] = 1, fact_subscription[churn] = 1 ),
+            CALCULATE ( COUNTROWS ( fact_churn_score ), fact_churn_score[targeted] = 1 )
+        ),
+        fact_churn_score[split] = "test"
+    )
+
+Campaign Recall (test) =
+    CALCULATE (
+        DIVIDE (
+            CALCULATE ( COUNTROWS ( fact_churn_score ), fact_churn_score[targeted] = 1, fact_subscription[churn] = 1 ),
+            CALCULATE ( COUNTROWS ( fact_churn_score ), fact_subscription[churn] = 1 )
+        ),
+        fact_churn_score[split] = "test"
+    )
+
+// ---------- what-if (Modeling > New parameter) ----------
+// Offer Cost       = GENERATESERIES ( 10, 150, 5 )      default 50
+// Acceptance Rate  = GENERATESERIES ( 0.05, 0.6, 0.05 )  default 0.30
+// Months Retained  = GENERATESERIES ( 1, 24, 1 )         default 8
+// Score Threshold  = GENERATESERIES ( 0.05, 0.95, 0.01 ) default 0.40
+
+Campaign Contacts =
+    CALCULATE (
+        COUNTROWS ( fact_churn_score ),
+        fact_churn_score[churn_probability] >= [Score Threshold Value]
+    )
+
+Campaign Cost =
+    [Campaign Contacts] * [Offer Cost Value]
+
+Campaign Revenue Saved =
+    CALCULATE (
+        SUMX ( fact_churn_score, RELATED ( fact_subscription[monthly_charges] ) ),
+        fact_churn_score[churn_probability] >= [Score Threshold Value],
+        fact_subscription[churn] = 1
+    ) * [Acceptance Rate Value] * [Months Retained Value]
+
+Campaign Net Value =
+    [Campaign Revenue Saved] - [Campaign Cost]
+
+Campaign ROI =
+    DIVIDE ( [Campaign Net Value], [Campaign Cost] )
+
+// ---------- formatting helpers ----------
+Churn Rate Colour =
+    SWITCH (
+        TRUE (),
+        [Churn Rate] >= 0.40, "#B8431D",
+        [Churn Rate] >= 0.25, "#EB6834",
+        [Churn Rate] >= 0.15, "#F5B394",
+        "#9CC2EF"
+    )
+
+KPI Subtitle =
+    FORMAT ( [Customers], "#,0" ) & " customers · "
+        & FORMAT ( [Churn Rate], "0.0%" ) & " churn · "
+        & FORMAT ( [MRR Lost], "$#,0" ) & " MRR lost"
