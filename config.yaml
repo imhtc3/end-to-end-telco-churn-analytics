@@ -1,0 +1,46 @@
+project: telco-churn-analytics
+random_seed: 42
+
+data:
+  source_urls:
+    - https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv
+    - https://raw.githubusercontent.com/treselle-systems/customer_churn_analysis/master/WA_Fn-UseC_-Telco-Customer-Churn.csv
+  raw_file: data/raw/WA_Fn-UseC_-Telco-Customer-Churn.csv
+  clean_file: data/processed/customers_clean.csv
+  warehouse: data/warehouse/telco.db
+  powerbi_dir: data/powerbi
+
+paths:
+  sql_dir: sql
+  figures: reports/figures
+  reports: reports
+  models: models
+  excel: excel/telco_churn_report.xlsx
+
+model:
+  test_size: 0.2
+  valid_size: 0.15
+  cv_folds: 5
+  target: churn
+
+  torch:
+    embedding_dim_cap: 8
+    hidden: [128, 64]
+    dropout: 0.25
+    lr: 0.002
+    weight_decay: 0.0001
+    batch_size: 256
+    max_epochs: 200
+    patience: 15
+
+# Business assumptions used for threshold selection.
+# Offer = $50 of credit + agent time. A churner who accepts stays ~8 more
+# months on average; about 30% of contacted churners accept. Breakeven is
+# therefore roughly p(churn) * 0.30 * 8 * monthly_charge > 50.
+economics:
+  offer_cost: 50.0
+  months_of_value_saved: 8
+  offer_success_rate: 0.30
+
+segmentation:
+  n_clusters: 4
