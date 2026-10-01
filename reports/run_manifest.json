@@ -1,0 +1,66 @@
+{
+  "started_at": "2026-10-01T07:20:15+00:00",
+  "steps": [
+    {
+      "step": "extract",
+      "status": "ok",
+      "seconds": 0.35
+    },
+    {
+      "step": "validate",
+      "status": "ok",
+      "seconds": 0.12
+    },
+    {
+      "step": "transform",
+      "status": "ok",
+      "seconds": 0.25
+    },
+    {
+      "step": "load",
+      "status": "ok",
+      "seconds": 1.45
+    },
+    {
+      "step": "sql",
+      "status": "ok",
+      "seconds": 0.53
+    },
+    {
+      "step": "eda",
+      "status": "ok",
+      "seconds": 34.44
+    },
+    {
+      "step": "segment",
+      "status": "ok",
+      "seconds": 10.17
+    },
+    {
+      "step": "train",
+      "status": "ok",
+      "seconds": 76.98
+    },
+    {
+      "step": "excel",
+      "status": "ok",
+      "seconds": 8.76
+    },
+    {
+      "step": "powerbi",
+      "status": "ok",
+      "seconds": 0.81
+    }
+  ],
+  "status": "success",
+  "finished_at": "2026-10-01T07:22:29+00:00",
+  "validation": {
+    "rows": 7043,
+    "errors": [],
+    "warnings": [
+      "TotalCharges: 11 non-numeric values (all tenure == 0, will impute 0)"
+    ]
+  },
+  "rows": 7043,
+  "best_model": "pytorch_tabular_net"
+}

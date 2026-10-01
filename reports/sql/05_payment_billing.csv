@@ -1,0 +1,9 @@
+payment_method,billing,customers,churn_rate_pct,avg_tenure
+Electronic check,Paperless,1742,49.77,25.4
+Electronic check,Paper,623,32.74,24.5
+Mailed check,Paperless,656,27.29,21.5
+Bank transfer (automatic),Paperless,891,20.88,43.9
+Credit card (automatic),Paperless,882,19.05,43.1
+Mailed check,Paper,956,13.49,22.0
+Bank transfer (automatic),Paper,653,11.03,43.4
+Credit card (automatic),Paper,640,10.0,43.4

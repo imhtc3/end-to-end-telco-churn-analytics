@@ -1,0 +1,6 @@
+contract_type,internet_service,top_quartile_customers,churned,churn_rate_pct,annualised_revenue_lost
+Month-to-month,Fiber optic,871,454,52.12,535297.0
+One year,Fiber optic,444,93,20.95,115651.0
+Two year,Fiber optic,395,30,7.59,37988.0
+Two year,DSL,47,1,2.13,1109.0
+One year,DSL,3,0,0.0,0.0
